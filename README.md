@@ -11,3 +11,13 @@ I put new changes to new branch
 
 weather is good
 Here is some new text I am adding from the shell to update the README file.
+
+Making changes to push to local computer.
+
+doing it *from* **remote**
+
+rainy day
+
+fog and cloud 
+
+And here is some new text I am adding in the RStudio IDE.
