@@ -1,0 +1,209 @@
+```{R}
+library("curl")
+library("tidyverse")
+library("manipulate")
+
+x <- 8
+l <- 15
+ppois(q = x, lambda = l)
+```
+```{R}
+x <- 0
+l <- 15
+ppois(q = x, lambda = l)
+```
+```{R}
+x <- 3
+l <- 15
+ppois(q = x, lambda = l)
+```
+```{R}
+x <- 0:31
+l <- 15
+probset <- ppois(q = x, lambda = l)
+barplot(probset, names.arg = x, space = 0, xlab = "x", ylab = "Pr(X = x)", main = paste0("Probability Mass Function\nlambda = ", l))
+```
+```{R}
+calls <- rpois(n = 104, lambda =15)
+calls 
+```
+```{R}
+calls <- rpois(n = 104, lambda =15)
+hist(calls, xlim = range(0:30), ylim = NULL)
+```
+#The shape of histogram is more centralized compared to the probablity mass function that has more tendency towards the right.
+```{R}
+library(curl)
+f <- f <- curl("https://raw.githubusercontent.com/difiore/ADA-2019/master/zombies.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+d
+```
+```{R}
+mean(d[["height"]])
+mean(d[["weight"]])
+mean(d[["age"]])
+mean(d[["zombies_killed"]])
+mean(d[["years_of_education"]])
+```
+```{R}
+sd(d[["height"]])
+sd(d[["weight"]])
+sd(d[["age"]])
+sd(d[["zombies_killed"]])
+sd(d[["years_of_education"]])
+```
+```{R}
+library("dplyr")
+s <- select(d, gender, height, weight, age, zombies_killed, years_of_education)
+fem <- filter(s, gender == "Female")
+mal <- filter(s, gender == "Male")
+fem
+mal
+```
+```{R}
+library("ggplot2")
+boxplot(log(height) ~ gender, d)
+boxplot(log(weight) ~ gender, d)
+boxplot(log(age) ~ gender, d)
+```
+```{R}
+zom1 <- boxplot(mal$zombies_killed, mal$years_of_education)
+zom2 <- boxplot(fem$zombies_killed, fem$years_of_education)
+zom1
+zom2
+```
+```{R}
+s <- select(d, c("height", "weight", "age"))
+s
+```
+```{R}
+plot <- ggplot(data = d, aes(x = log(height, weight), y = log(age)))
+plot <- plot + geom_point(na.rm = TRUE)  
+plot <- plot + theme(legend.position = "bottom", legend.title = element_blank())
+plot
+```
+#They do not look related. 
+
+```{R}
+s <- select(d, c("height", "weight"), "age")
+pairs(s[, 1:ncol(s)])
+```
+##they do not look related. 
+```{R}
+s <- select(d, height, weight, age, zombies_killed, years_of_education)
+s
+```
+```{R}
+library("ggplot2")
+hist(d$age,probability=TRUE, main="Histogram of age normal
+distribution",xlab="Approximately normally distributed data")
+lines(density(d$age),col=2)
+hist(d$height,probability=TRUE, main="Histogram of height normal
+distribution",xlab="Approximately normally distributed data")
+lines(density(d$height),col=2)
+hist(d$weight,probability=TRUE, main="Histogram of weight normal
+distribution",xlab="Approximately normally distributed data")
+lines(density(d$weight),col=2)
+hist(d$zombies_killed,probability=TRUE, main="Histogram of zombies normal
+distribution",xlab="Approximately normally distributed data")
+lines(density(d$zombies_killed),col=2)
+hist(d$years_of_education,probability=TRUE, main="Histogram of education normal
+distribution",xlab="Approximately normally distributed data")
+lines(density(d$years_of_education),col=2)
+```
+```{R}
+qqnorm(d$age)
+qqline(d$age, col = "red")
+qqnorm(d$height)
+qqline(d$height, col = "red")
+qqnorm(d$weight)
+qqline(d$weight, col = "red")
+qqnorm(d$zombies_killed)
+qqline(d$zombies_killed, col = "red")
+qqnorm(d$years_of_education)
+qqline(d$years_of_education, col = "red")
+```
+#on both historgams and QQplots age, heaight and weight seem to be drawn from a normal distibution. but the other two variables do not seem to be drawn from a normal distribution. I think zombies and education distributions are Binomial distribution.
+```{R}
+sur <- d[order(-d$id), ]
+sur <- sur[26:55, ]
+sur
+```
+```{R}
+mean(sur$height)
+mean(sur$weight)
+mean(sur$zombies_killed)
+mean(sur$years_of_education)
+mean(sur$age)
+```
+```{R}
+sqrt(30)
+```
+```{R}
+sd(sur[["height"]])
+se <- function(x) {sd(sur$height)/sqrt(length(x))}
+se(sur$height)
+```
+```{R}
+sd(sur[["weight"]])
+se <- function(x) {sd(sur$weight)/sqrt(length(x))}
+se(sur$weight)
+```
+```{R}
+sd(sur[["age"]])
+se <- function(x) {sd(sur$age)/sqrt(length(x))}
+se(sur$age)
+```
+```{R}
+sd(sur[["zombies_killed"]])
+se <- function(x) {sd(sur$zombies_killed)/sqrt(length(x))}
+se(sur$zombies_killed)
+```
+```{R}
+sd(sur[["years_of_education"]])
+se <- function(x) {sd(sur$years_of_education)/sqrt(length(x))}
+se(sur$years_of_education)
+```
+```{R}
+summary(sur)
+```
+```{R}
+#heightCI
+a <- mean(sur$height)
+s <- sd(sur[["height"]])
+n <- 30
+hci <- qnorm(0.975)*s/sqrt(n)
+qnorm(0.025)
+hci
+```
+```{R}
+#weightCI
+a <- mean(sur$weight)
+s <- sd(sur[["weight"]])
+n <- 30
+wci <- qnorm(0.975)*s/sqrt(n)
+qnorm(0.025)
+wci
+```
+```{R}
+#ageCI
+a <- mean(sur$age)
+s <- sd(sur[["age"]])
+n <- 30
+agci <- qnorm(0.975)*s/sqrt(n)
+qnorm(0.025)
+agci
+```
+```{R}
+t.test(sur$zombies_killed, conf.level = 0.98)
+t.test(sur$zombies_killed, conf.level = 0.97)
+t.test
+```
+```{R}
+k <- 99
+n <- 30
+s <- NULL 
+x <- d
+for (i in 1:k) {s[[i]] <- sample(x, size = n, replace = TRUE)}
+head(s)
+```
