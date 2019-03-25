@@ -1,0 +1,137 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{R}
+z.prop.test <- function(mu0, muA, sigma, n, p1, n1, p2 = NULL, n2 = NULL, p0, alternative = "two.sided", conf.level = 0.95){
+  p <- rep(NA, k)
+  for (i in 1:k) {
+    z <- (m - mu0)/(s/sqrt(n))
+    t <- (m -mu0)/(s/sqrt(n))
+    ci <- c(m - qt(1 - alpha/2, df = n - 1) * sem, Inf)
+    p[i] <- pnorm(z, lower.tail = TRUE)
+    p[i] <- pnorm(z, lower.tail = FALSE)}
+  if (alternative == "less"){
+  p1>p2
+  }
+  else if (alternative == "greater"){
+  p1<p2
+  }
+  if (p2 == "NULL" || n2 == "NULL"){
+  p1
+  }
+  if (p2 == "NULL" || n2 == "NULL"){
+  n1
+  }
+  if (p2 == "NULL" || n2 == "NULL"){
+    correct = FALSE
+    p1
+  }
+  zproplist <- list(z, t, ci, p[i])
+  return(zproplist)  
+}
+```
+
+
+```{R}
+library("readr")
+library("tidyverse")
+f <- "https://raw.githubusercontent.com/difiore/ADA-2019/master/KamilarAndCooperData.csv"
+d <- read_csv(f, col_names = TRUE)
+head(d)
+```
+```{R}
+library("ggplot2", "gridExtra", "manipulate", "lmodel2")
+fit <- lm(data = d, MaxLongevity_m~Brain_Size_Species_Mean)
+fit
+summary(fit)
+```
+```{R}
+head(fit$model)
+```
+```{R}
+fit2 <- lm(data = d, log(MaxLongevity_m)~log(Brain_Size_Species_Mean))
+fit2
+summary(fit2)
+```
+```{R}
+g <- ggplot(data = d, aes(x = MaxLongevity_m, y = Brain_Size_Species_Mean))
+g <- g + geom_text(aes(label = rownames(d)), size = 3.5) 
+g
+```
+```{R}
+d$logMaxLongevity_m <- log(d$MaxLongevity_m)
+d$logBrain_Size_Species_Mean <- log(d$Brain_Size_Species_Mean)
+g <- ggplot(data = d, aes(x = logMaxLongevity_m, y = logBrain_Size_Species_Mean)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x)
+g
+```
+```{R}
+beta1 <- cor(d$MaxLongevity_m, d$logBrain_Size_Species_Mean) * (sd(d$MaxLongevity_m)/sd(d$logBrain_Size_Species_Mean))
+beta1
+```
+
+```{R}
+y <- d$MaxLongevity_m - mean(d$MaxLongevity_m)
+x <- d$Brain_Size_Species_Mean - mean(d$Brain_Size_Species_Mean)
+z <- data.frame(cbind(x, y))
+g <- ggplot(data = d, aes(x = x, y = y)) + geom_point()
+g
+#dont know how to add the lines and details to the plot
+```
+```{R}
+slope.test <- function(beta1) {
+    g <- ggplot(data = d, aes(x = x, y = y))
+    g <- g + geom_point()
+    g <- g + geom_abline(intercept = 0, slope = beta1, size = 1, colour = "blue", 
+        alpha = 1/2)
+    ols <- sum((y - beta1 * x)^2)
+    g <- g + ggtitle(paste("Slope = ", beta1, "\nSum of Squared Deviations = ", 
+        round(ols, 3)))
+    g
+}
+#i think this is the fomula but dont know how to get it done fully.
+```
+
+```{R}
+m <- lm(data = d, MaxLongevity_m ~ Brain_Size_Species_Mean)
+alpha <- 0.0097
+lmCI <- confint(m, level = 0.90 - alpha)
+attributes(lmCI)
+```
+```{R}
+library("lmodel2")
+se <- lmodel2(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d, range.y = "relative", range.x = "relative", nperm = 1000)
+se
+```
+```{R}
+ci1 <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = 150), interval = "confidence", level = 0.90)
+ci1
+ci <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = d$Brain_Size_Species_Mean), interval = "confidence", level = 0.90)  
+head(ci)
+```
+```{R}
+m <- lm(data = d, MaxLongevity_m~Brain_Size_Species_Mean)
+v <- seq(from = 1, to = 1000, by = 1)
+ci <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "confidence", level = 0.90)
+pi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = v), interval = "prediction", level = 0.90)
+plot(data = d, MaxLongevity_m~Brain_Size_Species_Mean)
+L1 <- lines(x = v, y = ci[, 1], col = "black")
+L2 <- lines(x = v, y = ci[, 2], col = "blue")
+L3 <- lines(x = v, y = ci[, 3], col = "blue")
+L4 <- lines(x = v, y = pi[, 2], col = "red")
+L5 <- lines(x = v, y = pi[, 3], col = "red")
+legend(400, 380, legend=c("L1", "L2", "L3", "L4", "L5"), col=c("black", "blue", "blue", "red", "red"), lty=1:1, cex=0.6)
+```
+```{R}
+pi <- predict(m, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", level = 0.90)
+pi
+```
+```{R}
+lm = lm(d$Brain_Size_Species_Mean ~ d$MaxLongevity_m)
+newdata = data.frame(Brain_Size_Species_Mean = 800)
+pe <- predict.lm(lm, newdata, interval = "predict", level = 0.90)
+pe
+#i dont think the model is predicting the observation accurately because its not considering all of the information from the original data.
+```
